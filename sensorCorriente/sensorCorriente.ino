@@ -4,13 +4,12 @@
 //La cantidad de muestras para calcular el promedio depende del nivel de ruido que tengan.
 
 float Sensibilidad=0.100;       //sensibilidad en voltios dependiendo el sensor 20A
-float Vsensor=0;
 int ApagoCorte=8;
 int ApagoCoag=7;
 int estadoBotonCor=0;
 int estadoBotonCoag=0;
 int Cor_on=2;
-int Coag_on=3;
+int Coag_on=4;
 
 void setup() {
   Serial.begin(9600);
@@ -21,29 +20,24 @@ void setup() {
 }
 
 void loop() {
-  float Idc=calculoCorriente(500);    //obtenemos la corriente promedio de 500 muestras 
- 
-  estadoBotonCor=digitalRead(Cor_on);  //almacena la lectura digital 
-  if(estadoBotonCor == HIGH){
-  Vsensor=analogRead(A0);
-  }
-   estadoBotonCoag=digitalRead(Coag_on);
-  if(estadoBotonCoag == HIGH){
-   Vsensor=analogRead(A1);
-  }
-  Serial.print("CorrienteCor: ");
-  Serial.println(Idc,3);              //imprimir la corriente con 3 decimales
+  float Idc=CORTE_C_REQUEST(500);         //obtenemos la corriente promedio de 500 muestras 
+  float IdcCoag=CORTE_C_REQUEST(500);    //obtenemos la corriente promedio de 500 muestras
+  Serial.print("I_Cor: ");
+  Serial.print(Idc,3);                     //imprimir la corriente con 3 decimales
+  Serial.print(" A, I_Coag: ");
+  Serial.println(IdcCoag,3);              //imprimir la corriente con 3 decimales
   delay(100);
 }
-float calculoCorriente(int numeroMuestras)
+float CORTE_C_REQUEST(int numeroMuestras)
 {
   float VoltajeSensorCOR = 0;
-  float VoltajeSensorCOAG = 0;
   float intensidad = 0;
-   
+
+  estadoBotonCor=digitalRead(Cor_on);                             //almacena la lectura digital 
+  if(estadoBotonCor == HIGH){
   for(int i=0;i<numeroMuestras;i++)                               //ciclo donde sumamos las 500 muestras
   {
-    VoltajeSensorCOR = Vsensor * (5.0/1023.0);              //lee el canal A0 y calcula el valor en tension 
+    VoltajeSensorCOR = analogRead(A0) * (5.0/1023.0);              //lee el canal A0 y calcula el valor en tension 
     intensidad=intensidad+(VoltajeSensorCOR-2.5087)/Sensibilidad;    //calculamos corriente y sumamos
   }
   intensidad=intensidad/numeroMuestras;
@@ -53,6 +47,34 @@ float calculoCorriente(int numeroMuestras)
   else{
    digitalWrite (ApagoCorte,LOW); 
   }
+  }
   return(intensidad);
 }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////COAGULACION ////////////////////////////////////////////////////////////////////
+
+  float COAG_C_REQUEST(int numeroMuestras)
+{
+  float VoltajeSensorCOAG = 0;
+  float intensidad = 0;
+ 
+  estadoBotonCoag=digitalRead(Coag_on);
+  if(estadoBotonCoag == HIGH){
+  for(int j=0;j<numeroMuestras;j++)                               //ciclo donde sumamos las 500 muestras
+  {
+    VoltajeSensorCOAG = analogRead(A1) * (5.0/1023.0);              //lee el canal A1 y calcula el valor en tension 
+    intensidad=intensidad+(VoltajeSensorCOAG-2.5087)/Sensibilidad;    //calculamos corriente y sumamos
+  }
+  intensidad=intensidad/numeroMuestras;
+  if( intensidad >= 0.4){
+    digitalWrite (ApagoCoag,HIGH);
+  }
+  else{
+   digitalWrite (ApagoCoag,LOW); 
+  }
+  }
+return(intensidad);
+}
+
 
