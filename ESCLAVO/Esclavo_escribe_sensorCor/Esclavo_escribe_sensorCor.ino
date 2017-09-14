@@ -26,10 +26,11 @@ void setup() {
 }
 
 void loop() {
-  float Idc=CORTE_C_REQUEST(500);               //obtenemos la corriente promedio de 500 muestras 
-  float IdcCoag=COAG_C_REQUEST(500);            //obtenemos la corriente promedio de 500 muestras
+  float Idc=CORTE_C_REQUEST(100);               //obtenemos la corriente promedio de 500 muestras 
+  float IdcCoag=COAG_C_REQUEST(50);            //obtenemos la corriente promedio de 500 muestras
   Salida_Corriente();
-  delay(200);
+  Serial.println (Idc);
+  delay(10);
 }
 //función que se ejecuta cuando los datos son solicitados por el maestro
 // esta función está registrada como un evento, vea setup ()
@@ -46,6 +47,7 @@ float CORTE_C_REQUEST(int numeroMuestras)
   }
   intensidad_Cor=intensidad_Cor/numeroMuestras;
   if( intensidad_Cor >= 0.1){
+   
     digitalWrite (ApagoCorte,HIGH);
     Corte =0x02;
   }
@@ -70,7 +72,7 @@ float CORTE_C_REQUEST(int numeroMuestras)
     intensidad_Coag=intensidad_Coag+(VoltajeSensorCOAG-2.497)/Sensibilidad;    //calculamos corriente y sumamos
   }
   intensidad_Coag=intensidad_Coag/numeroMuestras1;
-  if( intensidad_Coag >= 0.1){
+  if( intensidad_Coag >= 0.5){
     digitalWrite (ApagoCoag,HIGH);
     Coag = 0x01;
   }
