@@ -5,19 +5,24 @@
 float Idc = 0;
 float Sensibilidad=0.100;       //sensibilidad en voltios dependiendo el sensor 20A
 #define ApagoCorte 8
-const float umbralCorte=0.2;
+const float umbralCorte=1;
 
 void setup() {
   Serial.begin(9600);
   pinMode(ApagoCorte,OUTPUT);
+  digitalWrite(ApagoCorte,LOW);
+  
  }
 
 void loop() {
   
-   Idc=calculoCorriente(100,100);    //obtenemos la corriente promedio de 10 muestras 
+   digitalWrite (ApagoCorte,LOW);
+   //delay(200);
+   Idc=calculoCorriente(100,10000);    //obtenemos la corriente promedio de 10 muestras 
    Serial.print("I_Cor: ");
    Serial.println(Idc,3);              //imprimir la corriente con 3 decimales
    //delay(2000);
+   
    
 }
 
@@ -44,20 +49,25 @@ void loop() {
       
 
       VoltajeSensorCOR = analogRead(A0) * (5.0/1023.0);
-      
+      intensidad=(VoltajeSensorCOR-2.5085)/Sensibilidad;
+      //delay(1);
        
       if (intensidad>intensidadMayor){
         intensidadMayor=intensidad;
       }
     }
+
+    
     //Serial.print("  intensidadMayor: ");
     //Serial.println(intensidadMayor,3);
    
     if( intensidadMayor >= umbralCorte){
-      digitalWrite (ApagoCorte,HIGH);
+      digitalWrite (ApagoCorte,LOW);
+      delay(1000);
     }
     else{
-      digitalWrite (ApagoCorte,LOW); 
+      digitalWrite (ApagoCorte,HIGH);
+      delay(1000);
     }
     return(intensidadMayor);
 }
